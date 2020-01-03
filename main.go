@@ -58,7 +58,7 @@ func main() {
 	defer db.Close()
 	tables := handleTable(strings.Split(*tables, ","))
 	for _, t := range tables {
-		ddl := fmt.Sprintf("CREATE TABLE `%s` {\n", t.Name)
+		ddl := fmt.Sprintf("CREATE TABLE `%s` (\n", t.Name)
 		l := len(t.Columns)
 		for i, column := range t.Columns {
 			clickhouseType := column.ClickhouseType
@@ -71,7 +71,7 @@ func main() {
 			}
 		}
 		ddl += "\n"
-		ddl += "} Engine=ReplacingMergeTree(I_ID) order by I_ID"
+		ddl += ") Engine=ReplacingMergeTree(I_ID) order by I_ID"
 		fmt.Println(ddl)
 	}
 }
