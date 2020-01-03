@@ -1,4 +1,4 @@
-module github.com/ddlmysql2clickhouse
+module github.com/dangerous1990/ddlmysql2clickhouse
 
 go 1.13
 

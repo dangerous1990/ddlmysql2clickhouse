@@ -11,6 +11,6 @@
 
 - cmd bin
 ```
-    go get -d -u github.com/ddlmysql2clickhouse
+    go get -d -u github.com/dangerous1990/ddlmysql2clickhouse
 ```
 
