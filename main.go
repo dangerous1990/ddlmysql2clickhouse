@@ -22,6 +22,7 @@ type Column struct {
 	ClickhouseType   string
 	NumericPrecision int    `db:"NUMERIC_PRECISION"`
 	IsNullable       string `db:"IS_NULLABLE"`
+	ColumnType       string `db:"COLUMN_TYPE"`
 }
 
 var (
@@ -77,9 +78,10 @@ func main() {
 }
 
 var mysql2ClickhouseType = map[string]string{
-	"bigint":   "UInt64",
-	"tinyint":  "UInt8",
+	"bigint":   "Int64",
+	"tinyint":  "Int8",
 	"varchar":  "String",
+	"char":     "String",
 	"int":      "Int32",
 	"datetime": "DateTime",
 }
@@ -109,18 +111,25 @@ func getIntTypeByLength(length int) string {
 	return "Int64"
 }
 
+func unsigned(columType string) string {
+	if strings.Contains(columType, "unsigned") {
+		return "U"
+	}
+	return ""
+}
+
 func handleColumn(tableName string) []*Column {
 	var columns []*Column
-	query := "select COLUMN_NAME,DATA_TYPE,IFNULL(COLUMN_COMMENT,'') as COLUMN_COMMENT,IFNULL(NUMERIC_PRECISION,0) as NUMERIC_PRECISION from information_schema.COLUMNS where TABLE_NAME=?"
+	query := "select COLUMN_NAME,DATA_TYPE,IFNULL(COLUMN_COMMENT,'') as COLUMN_COMMENT,IFNULL(NUMERIC_PRECISION,0) as NUMERIC_PRECISION,COLUMN_TYPE from information_schema.COLUMNS where TABLE_NAME=?"
 	err := sqlx.Select(db, &columns, query, tableName)
 	if err != nil {
 		fmt.Printf("handleColumn %+v", err)
 	}
 	for i, column := range columns {
 		if column.DataType == "int" {
-			column.ClickhouseType = getIntTypeByLength(column.NumericPrecision)
+			column.ClickhouseType = unsigned(column.ColumnType) + getIntTypeByLength(column.NumericPrecision)
 		} else {
-			column.ClickhouseType = mysql2ClickhouseType[column.DataType]
+			column.ClickhouseType = unsigned(column.ColumnType)+ mysql2ClickhouseType[column.DataType]
 		}
 		columns[i] = column
 	}
