@@ -59,7 +59,7 @@ func main() {
 	defer db.Close()
 	tables := handleTable(strings.Split(*tables, ","))
 	for _, t := range tables {
-		ddl := fmt.Sprintf("CREATE TABLE `%s` (\n", t.Name)
+		ddl := fmt.Sprintf("CREATE TABLE `%s` ( \\ \n", t.Name)
 		l := len(t.Columns)
 		for i, column := range t.Columns {
 			clickhouseType := column.ClickhouseType
@@ -68,7 +68,9 @@ func main() {
 			}
 			ddl += fmt.Sprintf("`%s` %s comment '%s'", column.Name, clickhouseType, column.Comment)
 			if i != l-1 {
-				ddl += fmt.Sprintf(", \n")
+				ddl += fmt.Sprintf(", \\ \n")
+			}else {
+				ddl +=" \\ "
 			}
 		}
 		ddl += "\n"
