@@ -29,10 +29,12 @@ var (
 	db     *sqlx.DB
 	conn   *string
 	tables *string
+	schema *string
 )
 
 func init() {
 	conn = flag.String("conn", "", "eg. root:@tcp(localhost:3306)/test")
+	schema = flag.String("schema", "", "eg. database name")
 	tables = flag.String("tables", "", "eg. table1,table2")
 }
 
@@ -122,8 +124,8 @@ func unsigned(columType string) string {
 
 func handleColumn(tableName string) []*Column {
 	var columns []*Column
-	query := "select COLUMN_NAME,DATA_TYPE,IFNULL(COLUMN_COMMENT,'') as COLUMN_COMMENT,IFNULL(NUMERIC_PRECISION,0) as NUMERIC_PRECISION,COLUMN_TYPE from information_schema.COLUMNS where TABLE_NAME=?"
-	err := sqlx.Select(db, &columns, query, tableName)
+	query := "select COLUMN_NAME,DATA_TYPE,IFNULL(COLUMN_COMMENT,'') as COLUMN_COMMENT,IFNULL(NUMERIC_PRECISION,0) as NUMERIC_PRECISION,COLUMN_TYPE from information_schema.COLUMNS where TABLE_NAME=? and TABLE_SCHEMA=? "
+	err := sqlx.Select(db, &columns, query, tableName,schema)
 	if err != nil {
 		fmt.Printf("handleColumn %+v", err)
 	}
